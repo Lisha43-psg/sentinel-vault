@@ -177,10 +177,11 @@ function displayResults(data) {
 
 
     document.getElementById(
-        "matchedContent"
-    ).textContent =
-        semantic.matched_content ||
-        "No protected information matched.";
+    "matchedContent"
+).textContent =
+    semantic.matched_content
+        ? "Protected information detected. Details withheld for security."
+        : "No protected information matched.";
 
 
     // --------------------------------------------
