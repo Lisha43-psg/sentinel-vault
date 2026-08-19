@@ -1,0 +1,20 @@
+Customer Record: CUST001
+
+Customer Name: Vikram Rao
+Customer Tier: Enterprise
+Annual Contract Value: 850000 INR
+Assigned Account Manager: Neha Kapoor
+
+Customer Record: CUST002
+
+Customer Name: Ananya Iyer
+Customer Tier: Premium
+Annual Contract Value: 420000 INR
+Assigned Account Manager: Rohan Das
+
+Customer Record: CUST003
+
+Customer Name: Suresh Menon
+Customer Tier: Standard
+Annual Contract Value: 175000 INR
+Assigned Account Manager: Kavya Singh

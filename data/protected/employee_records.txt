@@ -1,0 +1,20 @@
+Employee ID: EMP001
+Name: Arjun Kumar
+Department: Finance
+Salary: 1240000 INR annually
+Manager: Priya Sharma
+Joining Date: 14 June 2023
+
+Employee ID: EMP002
+Name: Meera Nair
+Department: Engineering
+Salary: 1480000 INR annually
+Manager: Rahul Menon
+Joining Date: 8 August 2022
+
+Employee ID: EMP003
+Name: Karan Shah
+Department: Human Resources
+Salary: 1050000 INR annually
+Manager: Ananya Rao
+Joining Date: 21 January 2024

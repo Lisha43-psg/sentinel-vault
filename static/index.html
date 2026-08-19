@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>SentinelVault</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css"
+    >
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- HEADER -->
+        <header class="header">
+
+            <div class="brand">
+
+                <div class="shield">
+                    🛡
+                </div>
+
+                <div>
+                    <h1>SentinelVault</h1>
+
+                    <p>
+                        AI Output Security Monitor
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="status">
+
+                <span class="status-dot"></span>
+
+                System Online
+
+            </div>
+
+        </header>
+
+
+        <!-- MAIN -->
+        <main class="main">
+
+            <!-- INTRO -->
+            <section class="intro">
+
+                <h2>
+                    Detect Protected Data Leakage
+                </h2>
+
+                <p>
+                    Analyze AI-generated output using
+                    semantic similarity, factual
+                    verification, and explainable
+                    risk scoring.
+                </p>
+
+            </section>
+
+
+            <!-- INPUT CARD -->
+            <section class="card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h3>
+                            AI Output
+                        </h3>
+
+                        <p>
+                            Enter the AI-generated content
+                            you want to analyze.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <textarea
+                    id="aiOutput"
+                    placeholder="Paste AI-generated output here..."
+                ></textarea>
+
+
+                <div class="input-footer">
+
+                    <span id="characterCount">
+                        0 characters
+                    </span>
+
+                    <button
+                        id="analyzeButton"
+                        onclick="analyzeOutput()"
+                    >
+
+                        Analyze Output
+
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- LOADING -->
+            <section
+                id="loading"
+                class="loading hidden"
+            >
+
+                <div class="spinner"></div>
+
+                <p>
+                    Analyzing AI output...
+                </p>
+
+            </section>
+
+
+            <!-- RESULTS -->
+            <section
+                id="results"
+                class="results hidden"
+            >
+
+                <div class="result-header">
+
+                    <div>
+
+                        <h2>
+                            Security Analysis
+                        </h2>
+
+                        <p>
+                            SentinelVault detection result
+                        </p>
+
+                    </div>
+
+                    <div
+                        id="decisionBadge"
+                        class="decision-badge"
+                    >
+                        BLOCK
+                    </div>
+
+                </div>
+
+
+                <!-- RISK SUMMARY -->
+                <div class="risk-summary">
+
+                    <div class="risk-score">
+
+                        <span>
+                            Risk Score
+                        </span>
+
+                        <strong id="riskScore">
+                            0
+                        </strong>
+
+                        <small>
+                            / 100
+                        </small>
+
+                    </div>
+
+
+                    <div class="risk-level">
+
+                        <span>
+                            Risk Level
+                        </span>
+
+                        <strong id="riskLevel">
+                            LOW
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- METRICS -->
+                <div class="metrics">
+
+                    <div class="metric">
+
+                        <span>
+                            Semantic Similarity
+                        </span>
+
+                        <strong id="semanticScore">
+                            0%
+                        </strong>
+
+                    </div>
+
+
+                    <div class="metric">
+
+                        <span>
+                            Factual Relationship
+                        </span>
+
+                        <strong id="factualRelationship">
+                            NONE
+                        </strong>
+
+                    </div>
+
+
+                    <div class="metric">
+
+                        <span>
+                            Protected Source
+                        </span>
+
+                        <strong id="source">
+                            None
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- MATCHED DATA -->
+                <div class="analysis-section">
+
+                    <h3>
+                        Matched Protected Information
+                    </h3>
+
+                    <pre id="matchedContent"></pre>
+
+                </div>
+
+
+                <!-- REASONS -->
+                <div class="analysis-section">
+
+                    <h3>
+                        Why this decision?
+                    </h3>
+
+                    <ul id="reasons"></ul>
+
+                </div>
+
+
+                <!-- FACTUAL DETAILS -->
+                <div class="analysis-section">
+
+                    <h3>
+                        Factual Analysis
+                    </h3>
+
+                    <div class="factual-grid">
+
+                        <div>
+
+                            <span>
+                                Overlap Score
+                            </span>
+
+                            <strong id="overlapScore">
+                                0
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Exposed Facts
+                            </span>
+
+                            <strong id="exposedFacts">
+                                None
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Contradicted Facts
+                            </span>
+
+                            <strong id="contradictedFacts">
+                                None
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ERROR -->
+            <section
+                id="error"
+                class="error hidden"
+            >
+
+                <h3>
+                    Analysis Failed
+                </h3>
+
+                <p id="errorMessage"></p>
+
+            </section>
+
+        </main>
+
+
+        <!-- FOOTER -->
+        <footer class="footer">
+
+            <p>
+                SentinelVault • AI Output Security System
+            </p>
+
+            <p>
+                Semantic Detection + Factual Verification
+                + Explainable Risk Analysis
+            </p>
+
+        </footer>
+
+    </div>
+
+
+    <script src="/static/script.js"></script>
+
+</body>
+
+</html>
