@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from google import genai
 
+from app.factual_checker import check_factual_overlap as local_check_factual_overlap
 
 # --------------------------------------------------
 # Load environment variables
@@ -20,32 +21,14 @@ if not api_key:
     )
 os.environ.pop("GOOGLE_API_KEY", None)
 
-# Explicitly use the Gemini key loaded from .env.
-# Do not let the SDK choose GOOGLE_API_KEY.
-client = genai.Client(
-    api_key=api_key
-)
-
+client = genai.Client(api_key=api_key)
 
 
 # --------------------------------------------------
-# Factual overlap checker
+# Factual overlap checker (LLM with local fallback)
 # --------------------------------------------------
 
-def check_factual_overlap(
-    ai_output: str,
-    protected_context: str
-):
-    """
-    Compare AI-generated output against protected
-    information using an LLM.
-
-    Possible relationships:
-    MATCH
-    PARTIAL
-    CONTRADICTION
-    NONE
-    """
+def check_factual_overlap(ai_output: str, protected_context: str):
 
     prompt = f"""
 You are a security-focused factual overlap detector.
@@ -114,53 +97,35 @@ Rules for overlap_score:
 The overlap_score must be between 0.0 and 1.0.
 """
 
-
-    response = client.models.generate_content(
-    model="gemini-flash-latest",
-    contents=prompt
-)
-
-
-    raw_output = response.text.strip()
-
-
-    # --------------------------------------------------
-    # Remove markdown JSON fences if the model adds them
-    # --------------------------------------------------
-
-    if raw_output.startswith("```json"):
-        raw_output = raw_output[7:]
-
-    if raw_output.endswith("```"):
-        raw_output = raw_output[:-3]
-
-    raw_output = raw_output.strip()
-
-
-    # --------------------------------------------------
-    # Parse JSON
-    # --------------------------------------------------
-
     try:
+        response = client.models.generate_content(
+            model="gemini-flash-latest",
+            contents=prompt
+        )
+
+        raw_output = response.text.strip()
+
+        if raw_output.startswith("```json"):
+            raw_output = raw_output[7:]
+        if raw_output.endswith("```"):
+            raw_output = raw_output[:-3]
+        raw_output = raw_output.strip()
 
         result = json.loads(raw_output)
+        result["source"] = "llm"
+        return result
 
-    except json.JSONDecodeError:
-
-        return {
-            "relationship": "NONE",
-            "overlap_score": 0.0,
-            "exposed_facts": [],
-            "contradicted_facts": [],
-            "explanation": (
-                "The factual checker returned "
-                "an invalid JSON response."
-            ),
-            "raw_response": raw_output
-        }
-
-
-    return result
+    except Exception as e:
+        # Gemini unavailable, rate-limited, or permission error.
+        # Gracefully degrade to the local regex-based checker
+        # so the API never fails outright.
+        fallback_result = local_check_factual_overlap(
+            ai_output=ai_output,
+            protected_context=protected_context
+        )
+        fallback_result["source"] = "local_fallback"
+        fallback_result["llm_error"] = str(e)
+        return fallback_result
 
 
 # --------------------------------------------------
@@ -178,67 +143,30 @@ if __name__ == "__main__":
     Joining Date: 14 June 2023
     """
 
-
     test_outputs = [
-
         "Arjun earns approximately 12.4 lakh rupees per year.",
-
         "Arjun works in Finance but earns only 5 lakh rupees annually.",
-
         "Arjun works in the Finance department.",
-
         "The company cafeteria serves lunch from 12 PM to 2 PM."
     ]
 
-
-    print("=" * 60)
-    print("SENTINELVAULT - FACTUAL OVERLAP DETECTOR")
-    print("=" * 60)
-
-
-    for number, output in enumerate(
-        test_outputs,
-        start=1
-    ):
-
+    for number, output in enumerate(test_outputs, start=1):
         print("\n" + "=" * 60)
         print(f"TEST CASE {number}")
         print("=" * 60)
-
         print("\nAI Output:")
         print(output)
-
 
         result = check_factual_overlap(
             ai_output=output,
             protected_context=protected_information
         )
 
-
-        print("\nLLM FACTUAL ANALYSIS")
+        print("\nFACTUAL ANALYSIS")
         print("-" * 60)
-
-        print(
-            f"Relationship: "
-            f"{result.get('relationship')}"
-        )
-
-        print(
-            f"Overlap Score: "
-            f"{result.get('overlap_score')}"
-        )
-
-        print(
-            f"Exposed Facts: "
-            f"{result.get('exposed_facts')}"
-        )
-
-        print(
-            f"Contradicted Facts: "
-            f"{result.get('contradicted_facts')}"
-        )
-
-        print(
-            f"Explanation: "
-            f"{result.get('explanation')}"
-        )
+        print(f"Relationship: {result.get('relationship')}")
+        print(f"Overlap Score: {result.get('overlap_score')}")
+        print(f"Exposed Facts: {result.get('exposed_facts')}")
+        print(f"Contradicted Facts: {result.get('contradicted_facts')}")
+        print(f"Explanation: {result.get('explanation')}")
+        print(f"Source: {result.get('source')}")

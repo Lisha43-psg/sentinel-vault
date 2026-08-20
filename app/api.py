@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from app.vault_service import VaultService
-from app.factual_checker import check_factual_overlap
+from app.llm_factual_checker import check_factual_overlap
 from app.risk_engine import calculate_risk
 
 
@@ -49,12 +49,8 @@ class AnalyzeRequest(BaseModel):
 # HEALTH CHECK
 # --------------------------------------------------
 
-@app.get("/")
-def root():
-    return FileResponse("static/index.html")
-
-
 @app.get("/health")
+
 def health():
 
     return {
@@ -84,10 +80,13 @@ def analyze(
     # SEMANTIC SEARCH
     # --------------------------------------------------
 
-    results = vault.search(
-        query=ai_output,
-        top_k=3
-    )
+    try:
+        results = vault.search(
+            query=ai_output,
+            top_k=3
+        )
+    except Exception as e:
+        return {"error": f"Vault search failed: {str(e)}"}
 
 
     if not results:
@@ -136,10 +135,13 @@ def analyze(
 
     if semantic_score >= 0.60:
 
-        factual_result = check_factual_overlap(
-            ai_output=ai_output,
-            protected_context=best_match["content"]
-        )
+        try:
+            factual_result = check_factual_overlap(
+                ai_output=ai_output,
+                protected_context=best_match["content"]
+            )
+        except Exception as e:
+            return {"error": f"Factual analysis failed: {str(e)}"}
 
     else:
 
@@ -169,6 +171,8 @@ def analyze(
     # RESPONSE
     # --------------------------------------------------
 
+    below_threshold = semantic_score < 0.60
+
     return {
 
         "ai_output": ai_output,
@@ -178,8 +182,8 @@ def analyze(
                 semantic_score,
                 4
             ),
-            "source": best_match["document"],
-            "matched_content": best_match["content"]
+            "source": None if below_threshold else best_match["document"],
+            "matched_content": None if below_threshold else best_match["content"]
         },
 
         "factual_analysis": factual_result,

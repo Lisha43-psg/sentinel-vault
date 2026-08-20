@@ -13,7 +13,7 @@ from embeddings import (
     search_protected_information
 )
 
-from factual_checker import check_factual_overlap
+from llm_factual_checker import check_factual_overlap
 from risk_engine import calculate_risk
 
 

@@ -74,16 +74,16 @@ def calculate_risk(
 
     if relationship == "MATCH":
 
-        factual_weight = 0.90
+        factual_weight = 0.90 * (0.5 + 0.5 * factual_score)
 
     elif relationship == "PARTIAL":
 
-        factual_weight = 0.50
+        factual_weight = 0.50 * (0.5 + 0.5 * factual_score)
 
     else:
 
         factual_weight = 0.0
-
+        
 
     # --------------------------------------------------
     # SEMANTIC WEIGHT
